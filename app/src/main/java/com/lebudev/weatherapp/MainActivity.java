@@ -1,8 +1,11 @@
 package com.lebudev.weatherapp;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.Time;
 import android.util.Log;
@@ -27,8 +30,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     ArrayAdapter adapter;
@@ -40,23 +41,14 @@ public class MainActivity extends AppCompatActivity {
 
         ListView forecast_listview = (ListView) findViewById(R.id.lv_forecast);
 
-        String[] forecast_array = {
-                "Monday - Cloudy - 18/26",
-                "Today - Sunny - 17/28",
-                "Tomorrow - Foggy - 16/23",
-                "Wednesday - Rainy - 15/24",
-                "Thursday - Sunny - 19/27",
-                "Friday - Heavy rain - 15/23",
-                "Saturday - Hurricane - 15/19",
-                "Sunday - Armageddon - 38/42"};
-
-        List forecast_list = new ArrayList<>(Arrays.asList(forecast_array));
-
-        adapter = new ArrayAdapter(MainActivity.this, R.layout.forecast_list_item, R.id.tv_forecast_list_item, forecast_list);
+        adapter = new ArrayAdapter(MainActivity.this, R.layout.forecast_list_item, R.id.tv_forecast_list_item, new ArrayList<String>());
         forecast_listview.setAdapter(adapter);
         forecast_listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent weatherDetails = new Intent(MainActivity.this, WeatherDetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, (String) adapter.getItem(position));
+                startActivity(weatherDetails);
 
             }
         });
@@ -72,9 +64,27 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            new FetchWeatherTask().execute("94043");
+            updateWeather();
+            return true;
+
+        }
+        if (id == R.id.action_settings) {
+            Intent settings = new Intent(MainActivity.this, Settings.class);
+            startActivity(settings);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    private void updateWeather() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        String location = prefs.getString(getString(R.string.pref_key_location), getString(R.string.pref_location_default));
+        new FetchWeatherTask().execute(location);
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
