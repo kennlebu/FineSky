@@ -15,6 +15,7 @@ public class Settings extends PreferenceActivity implements Preference.OnPrefere
         addPreferencesFromResource(R.xml.pref_general);
 
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_key_location)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_key_temp_units)));
     }
 
     private void bindPreferenceSummaryToValue(Preference preference) {
