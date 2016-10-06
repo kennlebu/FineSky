@@ -66,13 +66,35 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_refresh) {
             updateWeather();
             return true;
-
         }
+
+        if (id == R.id.action_map) {
+            openPreferredLocationMap();
+        }
+
         if (id == R.id.action_settings) {
             Intent settings = new Intent(MainActivity.this, Settings.class);
             startActivity(settings);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openPreferredLocationMap() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String location = prefs.getString(getString(R.string.pref_key_location), getString(R.string.pref_location_default));
+
+        Uri geolocation = Uri.parse("geo:0,0?").buildUpon()
+                .appendQueryParameter("q", location)
+                .build();
+
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(geolocation);
+
+        if (i.resolveActivity(getPackageManager()) != null) {
+            startActivity(i);
+        } else {
+            Log.d("GeoLocation Intent", "Couldn\'t call " + location + ", no maps application installed");
+        }
     }
 
     @Override
